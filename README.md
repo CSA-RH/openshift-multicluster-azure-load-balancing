@@ -44,7 +44,7 @@ oc expose deploy $APP --port 8080 -n $APP
 # Expose the service as a Route so it's accessible from the outside
 oc create route edge --service=$APP -n $APP
 # Get the route and test it!
-export URL="https://$(oc get route $APP -n app1 -o jsonpath={.spec.host})"
+export URL="https://$(oc get route $APP -n $APP -o jsonpath={.spec.host})"
 curl $URL
 ```
 
@@ -67,7 +67,7 @@ oc expose deploy $APP --port 8080 -n $APP
 # Expose the service as a Route so it's accessible from the outside
 oc create route edge --service=$APP -n $APP
 # Get the route and test it!
-export URL="https://$(oc get route $APP -n app1 -o jsonpath={.spec.host})"
+export URL="https://$(oc get route $APP -n $APP -o jsonpath={.spec.host})"
 curl $URL
 ```
 
@@ -87,7 +87,7 @@ oc expose deploy $APP --port 8080 -n $APP
 # Expose the service as a Route so it's accessible from the outside
 oc create route edge --service=$APP -n $APP
 # Get the route and test it!
-export URL="https://$(oc get route $APP -n app1 -o jsonpath={.spec.host})"
+export URL="https://$(oc get route $APP -n $APP -o jsonpath={.spec.host})"
 curl $URL
 ```
 
@@ -107,8 +107,42 @@ oc expose deploy $APP --port 8080 -n $APP
 # Expose the service as a Route so it's accessible from the outside
 oc create route edge --service=$APP -n $APP
 # Get the route and test it!
-export URL="https://$(oc get route $APP -n app1 -o jsonpath={.spec.host})"
+export URL="https://$(oc get route $APP -n $APP -o jsonpath={.spec.host})"
 curl $URL
 ```
 
 </details>
+
+### Step 2) Create an Azure Application Gateway
+
+You can either do it via
+
+- Azure web portal
+- Azure CLI
+- Terraform
+- Bicep
+
+> [!tip]
+> For this small demo we will go over it via the web interface as it is more intuitive, but for a production scenario it is strongly advised to do it via Infrastructure as Code (either Terraform or Bicep)
+
+Head over to the marketplace and create a new application gateway
+
+![Create a new Application Gateway from Azure marketplace](./images/applicationgatewaymarketplace.png)
+
+Then name the AGW and choose the subnet according to your specific needs
+
+![Step 1 Basics](./images/step1.png)
+
+On to the next step! create a frontend (where your users will connect, and the IP your DNS must eventually resolve to).
+
+![Step 2 Frontend](./images/step2.png)
+
+To set up the backend pools (aka, our clusters `clusterA` and `clusterB`) we need to add their IP addresses or domain names. A quick way to get the IP address of the ingress controller your routes are going through is to use `dig +short` on the URLs we got before. So
+
+```bash
+dig +short $(oc get route app2 -n app2 -o jsonpath={.spec.host})
+```
+
+would work for `app2`
+
+Add those IP addresses as backend pools and move on to the next steps to create the rules
