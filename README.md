@@ -23,6 +23,13 @@ Say that you have set up an ARO cluster with several applications running on it.
 
 Be it a private or public cluster setup, ensure the Application Gateway we are about to create has access to the applications. For this example let's balance two "Hello Openshift" applications. Log in to your cluster and create the deployment.
 
+#### Setup Cluster A, app2
+
+> [!tip]
+> Some of these commands take a bit to complete in the background, despite the terminal returning everything is OK. Consider cheching before pasting the next command.
+>
+> Bear in mind that this is a simple tutorial, in a real life scenario we would be better off using a declarative approach to Kubernetes.
+
 ```bash
 export CLUSTER="clusterA"
 export APP="app1"
@@ -31,7 +38,7 @@ oc new-project $APP
 # Deploy the application on said namespace
 oc create deploy $APP --image=openshift/hello-openshift -n $APP
 # Change the response, so instead of "Hello Openshift", we see "hello $APP!"
-oc set env deployment app1 RESPONSE="Hello from $APP in $CLUSTER"
+oc set env deployment $APP RESPONSE="Hello from $APP in $CLUSTER"
 # Expose the deployment as a service
 oc expose deploy $APP --port 8080 -n $APP
 # Expose the service as a Route so it's accessible from the outside
@@ -40,3 +47,68 @@ oc create route edge --service=$APP -n $APP
 export URL="https://$(oc get route $APP -n app1 -o jsonpath={.spec.host})"
 curl $URL
 ```
+
+<details>
+<summary>and repeat for app2 in Cluster A, as well as app1 and app2 in Cluster B</summary>
+
+#### Setup Cluster A, app2
+
+```bash
+export CLUSTER="clusterA"
+export APP="app2"
+# Create a project for the app
+oc new-project $APP
+# Deploy the application on said namespace
+oc create deploy $APP --image=openshift/hello-openshift -n $APP
+# Change the response, so instead of "Hello Openshift", we see "hello $APP!"
+oc set env deployment $APP RESPONSE="Hello from $APP in $CLUSTER"
+# Expose the deployment as a service
+oc expose deploy $APP --port 8080 -n $APP
+# Expose the service as a Route so it's accessible from the outside
+oc create route edge --service=$APP -n $APP
+# Get the route and test it!
+export URL="https://$(oc get route $APP -n app1 -o jsonpath={.spec.host})"
+curl $URL
+```
+
+#### Setup Cluster B, app1
+
+```bash
+export CLUSTER="clusterB"
+export APP="app1"
+# Create a project for the app
+oc new-project $APP
+# Deploy the application on said namespace
+oc create deploy $APP --image=openshift/hello-openshift -n $APP
+# Change the response, so instead of "Hello Openshift", we see "hello $APP!"
+oc set env deployment $APP RESPONSE="Hello from $APP in $CLUSTER"
+# Expose the deployment as a service
+oc expose deploy $APP --port 8080 -n $APP
+# Expose the service as a Route so it's accessible from the outside
+oc create route edge --service=$APP -n $APP
+# Get the route and test it!
+export URL="https://$(oc get route $APP -n app1 -o jsonpath={.spec.host})"
+curl $URL
+```
+
+#### Setup Cluster B, app2
+
+```bash
+export CLUSTER="clusterB"
+export APP="app2"
+# Create a project for the app
+oc new-project $APP
+# Deploy the application on said namespace
+oc create deploy $APP --image=openshift/hello-openshift -n $APP
+# Change the response, so instead of "Hello Openshift", we see "hello $APP!"
+oc set env deployment $APP RESPONSE="Hello from $APP in $CLUSTER"
+# Expose the deployment as a service
+oc expose deploy $APP --port 8080 -n $APP
+# Expose the service as a Route so it's accessible from the outside
+oc create route edge --service=$APP -n $APP
+# Get the route and test it!
+export URL="https://$(oc get route $APP -n app1 -o jsonpath={.spec.host})"
+curl $URL
+```
+
+</details>
